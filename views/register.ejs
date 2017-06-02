@@ -1,0 +1,38 @@
+<% layout('./layout') -%>
+<% block('title', 'Sign Up') -%>
+
+<div class="container">
+  <h2>Sign Up</h2>
+  <form id="register-form" method="POST">
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" class="form-control" id="username" name="username" placeholder="Enter user name">
+    </div>
+    <div class="form-group">
+      <label for="pwd">Password:</label>
+      <input type="password" class="form-control" id="pwd" name="password" placeholder="Enter password">
+    </div>
+    <button type="submit" class="btn btn-default">Submit</button>
+    <span class="help-block error"></span>
+  </form>
+</div>
+<script>
+  $(document).ready(function() {
+    $("#register-form").on("submit", function() {
+      let form = $(this);
+      $.ajax({
+        method: "POST",
+        url: "/register",
+        data: form.serialize(),
+        success: function() {
+          window.location.href = "/tasks";
+        },
+        error: function(jqXHR) {
+          var error = JSON.parse(jqXHR.responseText);
+          $('.error', form).html("Ошибка регистрации: " + error);
+        }
+      });
+    return false;
+    });
+  });
+</script>

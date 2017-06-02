@@ -1,0 +1,13 @@
+{
+  "logFile": "./logs.log",
+  "cookiePassword": "secret",
+  "dbSettings": {
+      "user": "",
+      "database": "tasks",
+      "password": "",
+      "host": "localhost",
+      "port": 5432,
+      "max": 10,
+      "idleTimeoutMillis": 30000
+    }
+}

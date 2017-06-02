@@ -1,0 +1,186 @@
+<% layout('./layout') -%>
+<% block('title', 'Tasks') -%>
+
+<div class="container">
+  <h2>Tasks</h2>
+  <div class="row form-group">
+    <div class="col-md-6">
+      <label for="sel-priority">Priority:</label>
+      <select class="form-control" id="sel-priority">
+      <% data.priorities.forEach(v => { %>
+        <option value="<%= v.priorityId %>"><%= v.priority %></option>
+      <% } %>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label for="sel-status">Status:</label>
+      <select class="form-control" id="sel-status">
+        <% data.statuses.forEach(v => { %>
+        <option value="<%= v.statusId %>"><%= v.status %></option>
+      <% } %>
+      </select>
+    </div>
+  </div>
+  <div class="form">
+    <button type="button" class="btn btn-primary btn-md" id="button-add">Add</button>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th>Description</th>
+        <th>Priority</th>
+        <th>Status</th>
+        <% if (data.role === 'admin') { %>
+          <th>User</th>
+        <% } %>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    <% data.tasks.forEach(v => { %>
+      <tr data-task-id="<%=v.taskId%>">
+        <td class="cell-task-name"><%=v.task%></td>
+        <td class="cell-task-description"><%=v.description%></td>
+        <td class="cell-task-priority" data-task-priority="<%=v.priorityId%>"><%=v.priority%></td>
+        <td class="cell-task-status" data-task-status="<%=v.statusId%>"><%=v.status%></td>
+        <% if (data.role === 'admin') { %>
+          <td class="cell-task-name"><%=v.user%></td>
+        <% } %>
+        <td>
+          <button type="button" class="btn btn-primary btn-sm edit-task">Edit</button>
+        </td>
+      </tr>
+    <% }); %>
+    </tbody>
+  </table>
+
+  <div class="modal fade" id="task-modal" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Task Info</h4>
+        </div>
+        <div class="modal-body">
+          <form method="POST">
+
+           <div class="form-group">
+              <input type="text" class="form-control" id="modal-task-id" name="task-id" style="display: none">
+            </div>
+            
+            <div class="form-group">
+              <label for="modal-task-name">Task:</label>
+              <input type="text" class="form-control" id="modal-task-name" name="task-name">
+            </div>
+
+            <div class="form-group">
+              <label for="modal-task-description">Description:</label>
+              <textarea class="form-control" rows="5" id="modal-task-description" name="task-description"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="modal-task-priority">Priority:</label>
+              <select class="form-control" id="modal-task-priority" name="task-priority">
+                <% data.priorities.forEach(v => { %>
+                  <option value="<%= v.priorityId %>"><%= v.priority %></option>
+                <% } %>
+              </select>
+            </div>
+
+            <div class="form-status">
+              <label for="modal-task-name">Status:</label>
+              <select class="form-control" id="modal-task-status" name="task-status">
+                <% data.statuses.forEach(v => { %>
+                  <option value="<%= v.statusId %>"><%= v.status %></option>
+                <% } %>
+              </select>
+            </div>
+
+          </form> 
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" id="modal-save">Save</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+
+function fillModal (options) {
+  $("#modal-task-id").val(options.id || "");
+  $("#modal-task-name").val(options.name || "");
+  $("#modal-task-description").val(options.description || "");
+  $("#modal-task-priority").val(options.priorityId);
+  $("#modal-task-status").val(options.statusId);
+}
+
+$(document).ready(function() {
+  $("#sel-priority").change(function() {
+    var val = $(this).val();
+    $("#main-table tbody tr").each(function() {
+      if ($(this).find(".cell-task-priority").attr("data-task-priority") == val)
+        $(this).show();
+      else
+        $(this).hide();
+    });
+  });
+
+  $("#sel-status").change(function() {
+    var val = $(this).val();
+    $("#main-table tbody tr").each(function() {
+      if ($(this).find(".cell-task-status").attr("data-task-status") == val)
+        $(this).show();
+      else
+        $(this).hide();
+    });
+  });
+    
+  $("#modal-save").click(function() { $("#task-modal form").trigger("submit") });
+  $("#button-add").click(function() {
+    fillModal({});
+    $("#task-modal").modal();
+  });
+
+  $(".edit-task").click(function() {
+    let record = $(this).closest("tr");
+    let options = {};
+    options.id = record.attr("data-task-id");
+    options.name = record.children('.cell-task-name').html();
+    options.description = record.children('.cell-task-description').html();
+    options.priorityId = record.children('.cell-task-priority').attr('data-task-priority');
+    options.statusId = record.children('.cell-task-status').attr('data-task-status');
+    fillModal(options);
+     $("#task-modal").modal();
+  });
+
+  $("#task-modal form").on("submit", function() {
+    var form = $(this);
+    var isNew = false;
+    if ($("#modal-task-id").val() === "") isNew = true;
+
+    $.ajax({
+      method: "POST",
+      url: "/tasks",
+      xhrFields: {
+        withCredentials: true
+      },
+     crossDomain: true,
+      data: form.serialize(),
+      success: function(result) {
+        $("#task-modal").modal("hide");
+      },
+      error: function(jqXHR) {
+        var error = JSON.parse(jqXHR.responseText);
+        $("#task-modal").modal("hide");
+        alert("Cannot update the list");
+      }
+    });
+    return false;
+  });
+});
+
+</script>
