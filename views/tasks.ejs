@@ -9,7 +9,7 @@
       <select class="form-control" id="sel-priority">
       <% data.priorities.forEach(v => { %>
         <option value="<%= v.priorityId %>"><%= v.priority %></option>
-      <% } %>
+      <% }); %>
       </select>
     </div>
     <div class="col-md-6">
@@ -17,7 +17,7 @@
       <select class="form-control" id="sel-status">
         <% data.statuses.forEach(v => { %>
         <option value="<%= v.statusId %>"><%= v.status %></option>
-      <% } %>
+      <% }); %>
       </select>
     </div>
   </div>
@@ -25,7 +25,7 @@
     <button type="button" class="btn btn-primary btn-md" id="button-add">Add</button>
   </div>
 
-  <table class="table">
+  <table class="table" id="main-table">
     <thead>
       <tr>
         <th>Task</th>
@@ -69,7 +69,7 @@
            <div class="form-group">
               <input type="text" class="form-control" id="modal-task-id" name="task-id" style="display: none">
             </div>
-            
+
             <div class="form-group">
               <label for="modal-task-name">Task:</label>
               <input type="text" class="form-control" id="modal-task-name" name="task-name">
@@ -85,7 +85,7 @@
               <select class="form-control" id="modal-task-priority" name="task-priority">
                 <% data.priorities.forEach(v => { %>
                   <option value="<%= v.priorityId %>"><%= v.priority %></option>
-                <% } %>
+                <% }); %>
               </select>
             </div>
 
@@ -94,11 +94,11 @@
               <select class="form-control" id="modal-task-status" name="task-status">
                 <% data.statuses.forEach(v => { %>
                   <option value="<%= v.statusId %>"><%= v.status %></option>
-                <% } %>
+                <% }); %>
               </select>
             </div>
 
-          </form> 
+          </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" id="modal-save">Save</button>
@@ -132,13 +132,14 @@ $(document).ready(function() {
   $("#sel-status").change(function() {
     var val = $(this).val();
     $("#main-table tbody tr").each(function() {
+      console.log("yes");
       if ($(this).find(".cell-task-status").attr("data-task-status") == val)
         $(this).show();
       else
         $(this).hide();
     });
   });
-    
+
   $("#modal-save").click(function() { $("#task-modal form").trigger("submit") });
   $("#button-add").click(function() {
     fillModal({});
